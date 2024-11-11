@@ -1,51 +1,84 @@
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal, Image } from "react-native";
+import { useNavigation } from "expo-router";  // Gunakan expo-router jika Anda menggunakan Expo
+import React, { useState } from "react";
 
-export default function HomeScreen() {
+export default function LoginScreen() {
+  const navigation = useNavigation();
 
-  const showAlert = () => {
-    Alert.alert("Informasi", "Aplikasi belum selesai");
+  // State untuk menyimpan inputan email dan password
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false); // State untuk kontrol modal
+
+  const handleLoginPress = () => {
+    // Jika login berhasil, tampilkan pop-up
+    setIsModalVisible(true);
+
+    // Simulasi proses login
+    setTimeout(() => {
+      setIsModalVisible(false); // Menutup modal setelah beberapa detik
+      navigation.navigate("home"); // Navigasi ke halaman home setelah login berhasil
+    }, 4000); // Menunggu 2 detik sebelum pindah ke halaman home
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>ARI SUGIANTO</Text>
-      <View style={styles.papan}>
-        <Text style={styles.text1}>05 November 2024</Text>
-        <Text style={styles.text2}>07:00</Text>
-        <Text style={styles.text3}>MASUK</Text>
-        <Text style={styles.text4}>17:00</Text>
-        <Text style={styles.text5}>PULANG</Text>
-      </View>
-      <Text style={styles.text}>RIWAYAT ABSENSI</Text>
-      <View style={styles.waktu}>
-        <Text style={styles.textW}>05 November 2024</Text>
-        <Text style={styles.textW2}>07:00</Text>
-        <Text style={styles.textW3}>MASUK</Text>
-        <Text style={styles.textW4}>17:00</Text>
-        <Text style={styles.textW5}>PULANG</Text>
-      </View>
-      <View style={styles.waktu}>
-        <Text style={styles.textW}>06 November 2024</Text>
-        <Text style={styles.textW2}>07:00</Text>
-        <Text style={styles.textW3}>MASUK</Text>
-        <Text style={styles.textW4}>17:00</Text>
-        <Text style={styles.textW5}>PULANG</Text>
-      </View>
-      <View style={styles.waktu}>
-        <Text style={styles.textW}>07 November 2024</Text>
-        <Text style={styles.textW2}>07:00</Text>
-        <Text style={styles.textW3}>MASUK</Text>
-        <Text style={styles.textW4}>17:00</Text>
-        <Text style={styles.textW5}>PULANG</Text>
-      </View>
-      {/* <View style={styles.bulat}>
-        <Text style={styles.textbulat}>+</Text>
-      </View> */}
-      <TouchableOpacity style={styles.bulat} onPress={showAlert}>
-        <Text style={styles.textbulat}>+</Text>
-      </TouchableOpacity>
+      <View style={styles.kotak}>
+        <Text style={styles.text}>LOGIN</Text>
+        <Text style={styles.text1}>
+          Sudah Punya Akun?
+          <Text style={styles.text2}>Daftar</Text>
+        </Text>
 
+        {/* Input Email */}
+        <Text style={styles.email}>Email</Text>
+        <TextInput
+          style={styles.kotakE}
+          placeholder="email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+        />
 
+        {/* Input Password */}
+        <Text style={styles.password}>Password</Text>
+        <TextInput
+          style={styles.kotakE}
+          placeholder="password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+
+        <View style={styles.forget}>
+          <View style={styles.cekbot}></View>
+          <Text style={styles.cekbot2}>Ingat Aku</Text>
+          <Text style={styles.cekbot3}>Lupa Password</Text>
+        </View>
+
+        <TouchableOpacity style={styles.masuk} onPress={handleLoginPress}>
+          <Text style={styles.masuk2}>MASUK</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Modal Pop-Up LOGIN BERHASIL */}
+      <Modal
+        transparent={true}
+        animationType="fade"
+        visible={isModalVisible}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            {/* GIF Animation for Checkmark */}
+            <Image
+              source={require('../assets/images/berhasil.gif')}  // Pastikan path menuju file GIF benar
+              style={styles.icon}
+            />
+            <Text style={styles.modalText}>LOGIN BERHASIL</Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -53,129 +86,109 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    margin: 10,
-    marginTop: 30,
-    padding: 16,
-    backgroundColor: '#97BE5A',
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
   },
   text: {
+    color: "white",
+    transform: [{ translateY: -60 }],
     fontSize: 20,
-    marginBottom: 5
-  },
-  papan: {
-    // flex: 2,
-    backgroundColor: '#FF0000',
-    width: '98%',
-    height: 200,
-    borderRadius: 20,
-    marginBottom: 20,
-    position: 'relative',
-    padding: 10,
-  },
-  waktu: {
-    // flex: 2,
-    marginTop: 10,
-    backgroundColor: '#FF0000',
-    width: '98%',
-    height: 70,
-    borderRadius: 20,
-    position: 'relative',
   },
   text1: {
-    marginTop: 10,
-    left: '50%',
-    transform: [{ translateX: -57 }],
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 15,
+    color: "white",
+    transform: [{ translateY: -60 }],
+    fontSize: 10,
+    marginLeft: 5,
   },
   text2: {
-    position: 'absolute',
-    left: 10,
-    top: '50%',
-    transform: [{ translateY: 10 }],
-    color: 'white',
-    fontSize: 40,
-    marginLeft: 20
+    color: "red",
+    fontSize: 10,
+    margin: 5,
   },
-  text3: {
-    position: 'absolute', // Mengatur posisi text2 menjadi absolute
-    left: 10, // Menentukan jarak dari kiri
-    top: '50%', // Memusatkan secara vertikal
-    transform: [{ translateY: 50 }], // Menggeser setengah tinggi teks untuk memusatkan
-    color: 'white',
-    fontSize: 25,
-    marginLeft: 26
+  email: {
+    color: "white",
+    transform: [{ translateX: -95 }],
+    marginBottom: 8,
   },
-  text4: {
-    position: 'absolute', // Mengatur posisi text2 menjadi absolute
-    right: 10, // Menentukan jarak dari kiri
-    top: '50%', // Memusatkan secara vertikal
-    transform: [{ translateY: 10 }], // Menggeser setengah tinggi teks untuk memusatkan
-    color: 'white',
-    fontSize: 40,
-    marginRight: 26
+  password: {
+    color: "white",
+    transform: [{ translateX: -85 }],
+    marginBottom: 8,
   },
-  text5: {
-    position: 'absolute', // Mengatur posisi text2 menjadi absolute
-    right: 10, // Menentukan jarak dari kiri
-    top: '50%', // Memusatkan secara vertikal
-    transform: [{ translateY: 50 }], // Menggeser setengah tinggi teks untuk memusatkan
-    color: 'white',
-    fontSize: 25,
-    marginRight: 26
+  kotak: {
+    width: "80%",
+    height: "75%",
+    backgroundColor: "#0b1957",
+    borderRadius: 20,
+    justifyContent: "center",
+    alignContent: "center",
+    alignItems: "center",
+    position: "relative",
   },
-  textW: {
-    color: 'white',
-    left: 20,
-    top: '50%',
-    transform: [{ translateY: -10 }]
-  },
-  textW2: {
-    top: '50%',
-    transform: [{ translateX: 170 }, { translateY: -35 }],
-    color: 'white',
-    fontSize: 14
-  },
-  textW3: {
-    top: '50%',
-    transform: [{ translateX: 170 }, { translateY: -40 }],
-    color: 'white',
-    fontSize: 11
-  },
-  textW4: {
-    top: '50%',
-    transform: [{ translateX: 220 }, { translateY: -69 }],
-    color: 'white',
-    fontSize: 14
-
-  },
-  textW5: {
-    top: '50%',
-    transform: [{ translateX: 220 }, { translateY: -73.5 }],
-    color: 'white',
-    fontSize: 11
-  },
-  bulat: {
-    flex: 1,
-    width: 50,
+  kotakE: {
+    width: "85%",
     height: 50,
-    backgroundColor: '#5E1675',
-    borderRadius: 50,
-    position: 'absolute',
-    right: 28,
-    bottom: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-
+    backgroundColor: "white",
+    borderRadius: 20,
+    marginBottom: 10,
+    paddingLeft: 10,
   },
-  textbulat: {
-    fontSize: 50,
-    color: 'white',
-    transform: [{ translateY: -10 }],
+  masuk: {
+    width: "85%",
+    height: 50,
+    backgroundColor: "white",
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  forget: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+  cekbot: {
+    width: 10,
+    height: 10,
+    backgroundColor: "white",
+    margin: 5,
+    left: -20,
+  },
+  cekbot2: {
+    color: "white",
+    left: -20,
+  },
+  cekbot3: {
+    color: "white",
+    right: -20,
+  },
+  masuk2: {
+    color: "#0b1957",
+  },
 
-
-  }
-
+  // Style untuk Modal Pop-Up
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Transparan hitam di belakang modal
+  },
+  modalContent: {
+    width: 250,
+    height: 250,
+    backgroundColor: "white",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  icon: {
+    width: 200,
+    height: 180,
+    marginBottom: 15,
+  },
+  modalText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#0b1957", // Warna biru
+  },
 });
-
