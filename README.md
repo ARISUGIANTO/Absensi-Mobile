@@ -3,7 +3,11 @@
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 
-(../assets/images/loginscreen.jpg)
+[LOGINSCREEN](../assets/images/loginscreen.jpg)
+[MODAL](../assets/images/modal.jpg)
+[HOMECSREEEN](../assets/images/homescreen.jpg)
+[LOKASISCREEN](../assets/images/lokasiscreen.jpg)
+[SIMPAN](../assets/images/simpan.jpg)
 ## Get started
 
 1. Install dependencies
