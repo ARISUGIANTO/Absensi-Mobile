@@ -1,24 +1,45 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal, Image } from "react-native";
-import { useNavigation } from "expo-router";  // Gunakan expo-router jika Anda menggunakan Expo
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal, Image, Alert } from "react-native";
+import { useNavigation } from "expo-router";
 import React, { useState } from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
-
-  // State untuk menyimpan inputan email dan password
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isModalVisible, setIsModalVisible] = useState(false); // State untuk kontrol modal
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const handleLoginPress = () => {
-    // Jika login berhasil, tampilkan pop-up
-    setIsModalVisible(true);
+  const handleLoginPress = async () => {
+    try {
+      const response = await fetch("http:/192.168.0.13:8000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    // Simulasi proses login
-    setTimeout(() => {
-      setIsModalVisible(false); // Menutup modal setelah beberapa detik
-      navigation.navigate("home"); // Navigasi ke halaman home setelah login berhasil
-    }, 4000); // Menunggu 2 detik sebelum pindah ke halaman home
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        const { token, token_type } = result.data;
+
+        // Simpan token di AsyncStorage
+        await AsyncStorage.setItem("authToken", `${token_type} ${token}`);
+
+        // Tampilkan modal sukses
+        setIsModalVisible(true);
+
+        // Navigasi ke home screen setelah beberapa detik
+        setTimeout(() => {
+          setIsModalVisible(false);
+          navigation.navigate("home");
+        }, 4000);
+      } else {
+        Alert.alert("Login Gagal", result.message || "Terjadi kesalahan saat login.");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      Alert.alert("Error", "Tidak dapat terhubung ke server.");
+    }
   };
 
   return (
@@ -55,11 +76,12 @@ export default function LoginScreen() {
           <Text style={styles.cekbot2}>Ingat Aku</Text>
           <Text style={styles.cekbot3}>Lupa Password</Text>
         </View>
-
         <TouchableOpacity style={styles.masuk} onPress={handleLoginPress}>
           <Text style={styles.masuk2}>MASUK</Text>
         </TouchableOpacity>
       </View>
+
+
 
       {/* Modal Pop-Up LOGIN BERHASIL */}
       <Modal
@@ -70,19 +92,15 @@ export default function LoginScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            {/* GIF Animation for Checkmark */}
-            <Image
-              source={require('../assets/images/berhasil.gif')}  // Pastikan path menuju file GIF benar
-              style={styles.icon}
-            />
+            <Image source={require('../assets/images/berhasil.gif')} style={styles.icon} />
             <Text style={styles.modalText}>LOGIN BERHASIL</Text>
           </View>
         </View>
       </Modal>
+
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

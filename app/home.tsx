@@ -1,55 +1,93 @@
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
-import { Link } from "expo-router";
-import { useNavigation } from "@react-navigation/native";
+import { View, Text, StyleSheet, Alert, TouchableOpacity, FlatList } from 'react-native';
+import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen() {
-    const navigation = useNavigation();
+    const [presensiData, setPresensiData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [todayData, setTodayData] = useState(null); // Pastikan deklarasi todayData sudah ada
 
-    const lokasi = () => {
-        navigation.navigate("lokasi");
+    const getPresensiData = async () => {
+        try {
+            const token = await AsyncStorage.getItem('authToken');
+            if (!token) {
+                Alert.alert('Error', 'Token tidak ditemukan. Harap login kembali.');
+                return;
+            }
+
+            const response = await fetch('http://192.168.0.13:8000/api/get-presensi', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            const result = await response.json();
+            console.log("Response from get-presensi API:", result);
+
+            if (response.ok && result.success) {
+                setPresensiData(result.data);
+
+                // Cari data hari ini dari respons API
+                const today = result.data.find(item => item.is_hari_ini);
+                if (today) {
+                    setTodayData(today);
+                }
+            } else {
+                Alert.alert('Error', result.message || 'Gagal mengambil data presensi.');
+            }
+        } catch (error) {
+            console.error('Error fetching presensi data:', error);
+            Alert.alert('Error', 'Tidak dapat terhubung ke server.');
+        } finally {
+            setLoading(false);
+        }
     };
+
+    useEffect(() => {
+        getPresensiData();
+    }, []);
+
+    if (loading) {
+        return (
+            <View style={styles.container}>
+                <Text>Loading...</Text>
+            </View>
+        );
+    }
 
 
     return (
         <View style={styles.container}>
-            {/* <Text style={styles.text}>ARI SUGIANTO</Text> */}
             <Text style={styles.text}>ARI SUGIANTO</Text>
-
-
-            <View style={styles.papan}>
-                <Text style={styles.text1}>11 November 2024</Text>
-                <Text style={styles.text2}>07:00</Text>
-                <Text style={styles.text3}>MASUK</Text>
-                <Text style={styles.text4}>17:00</Text>
-                <Text style={styles.text5}>PULANG</Text>
-            </View>
+            {todayData && (
+                <View style={styles.papan}>
+                    <Text style={styles.text1}>{todayData.tanggal}</Text>
+                    <Text style={styles.text2}>{todayData.masuk || '-'}</Text>
+                    <Text style={styles.text3}>MASUK</Text>
+                    <Text style={styles.text4}>{todayData.pulang || '-'}</Text>
+                    <Text style={styles.text5}>PULANG</Text>
+                </View>
+            )}
             <Text style={styles.text}>RIWAYAT ABSENSI</Text>
-            <View style={styles.waktu}>
-                <Text style={styles.textW}>10 November 2024</Text>
-                <Text style={styles.textW2}>07:00</Text>
-                <Text style={styles.textW3}>MASUK</Text>
-                <Text style={styles.textW4}>17:00</Text>
-                <Text style={styles.textW5}>PULANG</Text>
-            </View>
-            <View style={styles.waktu}>
-                <Text style={styles.textW}>09 November 2024</Text>
-                <Text style={styles.textW2}>07:00</Text>
-                <Text style={styles.textW3}>MASUK</Text>
-                <Text style={styles.textW4}>17:00</Text>
-                <Text style={styles.textW5}>PULANG</Text>
-            </View>
-            <View style={styles.waktu}>
-                <Text style={styles.textW}>08 November 2024</Text>
-                <Text style={styles.textW2}>07:00</Text>
-                <Text style={styles.textW3}>MASUK</Text>
-                <Text style={styles.textW4}>17:00</Text>
-                <Text style={styles.textW5}>PULANG</Text>
-            </View>
-            <TouchableOpacity style={styles.bulat} onPress={lokasi}>
+            <FlatList
+                data={presensiData}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+
+                    <View style={styles.waktu}>
+                        <Text style={styles.textW}>{item.tanggal}</Text>
+                        <Text style={styles.textW1}>Masuk</Text>
+                        <Text style={styles.textW2}>{item.masuk || '-'}</Text>
+                        <Text style={styles.textW3}>Pulang</Text>
+                        <Text style={styles.textW4}>{item.pulang || '-'}</Text>
+                    </View>
+                )}
+            />
+            <TouchableOpacity style={styles.bulat}>
                 <Text style={styles.textbulat}>+</Text>
             </TouchableOpacity>
-
-
         </View>
     );
 }
@@ -76,20 +114,10 @@ const styles = StyleSheet.create({
         position: 'relative',
         padding: 10,
     },
-    waktu: {
-        // flex: 2,
-        marginTop: 10,
-        backgroundColor: '#0b1957',
-        width: '98%',
-        height: 70,
-        borderRadius: 20,
-        position: 'relative',
-        justifyContent: 'center'
-    },
     text1: {
         marginTop: 10,
         left: '50%',
-        transform: [{ translateX: -57 }],
+        transform: [{ translateX: -78 }],
         color: 'white',
         fontWeight: 'bold',
         fontSize: 15,
@@ -130,40 +158,45 @@ const styles = StyleSheet.create({
         fontSize: 25,
         marginRight: 26
     },
+    waktu: {
+        backgroundColor: '#0b1957',
+        width: '98%',
+        height: 70,
+        borderRadius: 20,
+        marginBottom: 10,
+        position: 'relative',
+        justifyContent: 'center',
+        padding: 10,
+    },
     textW: {
         color: 'white',
-
         left: 20,
-        top: '50%',
-        transform: [{ translateY: -10 }]
+    },
+    textW1: {
+        color: "white",
+        position: 'absolute',
+        right: 70,
+        transform: [{ translateY: -10 }, { translateX: 5 }]
     },
     textW2: {
-        top: '50%',
-        transform: [{ translateX: 170 }, { translateY: -30 }],
         color: 'white',
-        fontSize: 14
+        position: 'absolute',
+        right: 70,
+        transform: [{ translateY: 10 }]
     },
     textW3: {
-        top: '50%',
-        transform: [{ translateX: 170 }, { translateY: -30 }],
-        color: 'white',
-        fontSize: 11
+        color: "white",
+        position: 'absolute',
+        right: 70,
+        transform: [{ translateY: -10 }, { translateX: 58 }]
     },
     textW4: {
-        top: '50%',
-        transform: [{ translateX: 220 }, { translateY: -53 }],
         color: 'white',
-        fontSize: 14
-
-    },
-    textW5: {
-        top: '50%',
-        transform: [{ translateX: 220 }, { translateY: -53 }],
-        color: 'white',
-        fontSize: 11
+        position: 'absolute',
+        right: 20,
+        transform: [{ translateY: 10 }]
     },
     bulat: {
-        flex: 1,
         width: 50,
         height: 50,
         backgroundColor: '#0b1957',
@@ -172,15 +205,14 @@ const styles = StyleSheet.create({
         right: 28,
         bottom: 30,
         justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'center'
+
 
     },
     textbulat: {
         fontSize: 50,
         color: 'white',
+        top: -9
 
-
-    }
-
+    },
 });
-
