@@ -1,11 +1,14 @@
 import { View, Text, StyleSheet, Alert, TouchableOpacity, FlatList } from 'react-native';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from 'expo-router';
 
 export default function HomeScreen() {
+    const navigation = useNavigation();
+
     const [presensiData, setPresensiData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [todayData, setTodayData] = useState(null); // Pastikan deklarasi todayData sudah ada
+    const [todayData, setTodayData] = useState(null);
 
     const getPresensiData = async () => {
         try {
@@ -15,7 +18,7 @@ export default function HomeScreen() {
                 return;
             }
 
-            const response = await fetch('http://192.168.0.13:8000/api/get-presensi', {
+            const response = await fetch('http://192.168.0.11:8000/api/get-presensi', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -60,7 +63,7 @@ export default function HomeScreen() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>ARI SUGIANTO</Text>
+            <Text style={styles.text}>Hi, Selamat Datang di Sistem Absensi👋</Text>
             {todayData && (
                 <View style={styles.papan}>
                     <Text style={styles.text1}>{todayData.tanggal}</Text>
@@ -85,7 +88,10 @@ export default function HomeScreen() {
                     </View>
                 )}
             />
-            <TouchableOpacity style={styles.bulat}>
+            <TouchableOpacity style={styles.bulat}
+                style={styles.bulat}
+                onPress={() => navigation.navigate('lokasi')}
+            >
                 <Text style={styles.textbulat}>+</Text>
             </TouchableOpacity>
         </View>

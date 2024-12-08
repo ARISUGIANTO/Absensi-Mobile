@@ -2,16 +2,18 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal, Image, Aler
 import { useNavigation } from "expo-router";
 import React, { useState } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import API_BASE_URL from "../config/config"
 
 export default function LoginScreen() {
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleLoginPress = async () => {
     try {
-      const response = await fetch("http:/192.168.0.13:8000/api/login", {
+      const response = await fetch("http:/192.168.0.11:8000/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -72,8 +74,15 @@ export default function LoginScreen() {
         />
 
         <View style={styles.forget}>
-          <View style={styles.cekbot}></View>
-          <Text style={styles.cekbot2}>Ingat Aku</Text>
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={() => setRememberMe(!rememberMe)}
+          >
+            <View style={styles.checkbox}>
+              {rememberMe && <Text style={styles.checkboxCheck}>✓</Text>}
+            </View>
+            <Text style={styles.cekbot2}>Ingat Aku</Text>
+          </TouchableOpacity>
           <Text style={styles.cekbot3}>Lupa Password</Text>
         </View>
         <TouchableOpacity style={styles.masuk} onPress={handleLoginPress}>
@@ -92,7 +101,7 @@ export default function LoginScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Image source={require('../assets/images/berhasil.gif')} style={styles.icon} />
+            <Image source={require("../assets/images/berhasil.gif")} style={styles.icon} />
             <Text style={styles.modalText}>LOGIN BERHASIL</Text>
           </View>
         </View>
@@ -179,6 +188,28 @@ const styles = StyleSheet.create({
     color: "white",
     right: -20,
   },
+  checkboxContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 20,
+    left: -25,
+    borderWidth: 1,
+    borderColor: "white",
+    backgroundColor: "transparent",
+  },
+  checkboxChecked: {
+    backgroundColor: "white",
+  },
+  checkboxCheck: {
+    color: "white",
+    fontWeight: "bold",
+    transform: [{ translateX: 5 }]
+  },
   masuk2: {
     color: "#0b1957",
   },
@@ -188,7 +219,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Transparan hitam di belakang modal
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     width: 250,
