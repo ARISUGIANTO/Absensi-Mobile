@@ -8,6 +8,7 @@ import {
     Modal,
     Image,
 } from "react-native";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "expo-router";
@@ -19,6 +20,12 @@ export default function Lokasi() {
     const [longitude, setLongitude] = useState(null);
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
+    const [region, setRegion] = useState({
+        latitude: -7.10884,
+        longitude: 113.51235,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+    });
 
     // Mendapatkan izin lokasi dan mengambil geolocation
     useEffect(() => {
@@ -26,8 +33,15 @@ export default function Lokasi() {
             const { status } = await Location.requestForegroundPermissionsAsync();
             if (status === "granted") {
                 const location = await Location.getCurrentPositionAsync({});
-                setLatitude(location.coords.latitude);
-                setLongitude(location.coords.longitude);
+                const { latitude, longitude } = location.coords;
+                setLatitude(latitude);
+                setLongitude(longitude);
+                setRegion({
+                    latitude,
+                    longitude,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                });
             } else {
                 Alert.alert("Permission Denied", "Lokasi tidak diizinkan.");
             }
@@ -86,13 +100,19 @@ export default function Lokasi() {
 
     return (
         <View style={styles.container}>
-            <View style={styles.map}>
-                <Image
-                    source={require("../assets/images/uim.png")}
-                    style={styles.mapImage}
-                    resizeMode="cover"
-                />
-            </View>
+            <MapView
+                style={StyleSheet.absoluteFill}
+                provider={PROVIDER_GOOGLE}
+                region={region}
+            >
+                {latitude && longitude && (
+                    <Marker
+                        coordinate={{ latitude, longitude }}
+                        title="Lokasi Anda"
+                        description="Inilah lokasi saat Anda melakukan absensi."
+                    />
+                )}
+            </MapView>
             <TouchableOpacity style={styles.button} onPress={handleSave} disabled={loading}>
                 <Text style={styles.buttonText}>Simpan Absensi</Text>
             </TouchableOpacity>
@@ -118,13 +138,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#e9f3ff",
-        justifyContent: "center",
+        justifyContent: "flex-end",
         alignItems: "center",
-    },
-    map: {
-        width: "auto",
-        borderRadius: 50,
-        marginBottom: 10,
     },
     button: {
         backgroundColor: "#0b1957",

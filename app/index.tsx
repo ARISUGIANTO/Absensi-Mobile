@@ -1,15 +1,30 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal, Image, Alert } from "react-native";
-import { useNavigation } from "expo-router";
 import React, { useState } from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import API_BASE_URL from "../config/config"
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  Modal,
+  Image,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Dimensions,
+} from "react-native";
+import { useNavigation } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import LottieView from "lottie-react-native";
+
+const { width, height } = Dimensions.get("window");
 
 export default function LoginScreen() {
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [isChecked, setIsChecked] = useState(false); // State untuk checkbox
 
   const handleLoginPress = async () => {
     try {
@@ -23,14 +38,9 @@ export default function LoginScreen() {
 
       if (response.ok && result.success) {
         const { token, token_type } = result.data;
-
-        // Simpan token di AsyncStorage
         await AsyncStorage.setItem("authToken", `${token_type} ${token}`);
 
-        // Tampilkan modal sukses
         setIsModalVisible(true);
-
-        // Navigasi ke home screen setelah beberapa detik
         setTimeout(() => {
           setIsModalVisible(false);
           navigation.navigate("home");
@@ -45,71 +55,77 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.kotak}>
-        <Text style={styles.text}>LOGIN</Text>
-        <Text style={styles.text1}>
-          Sudah Punya Akun?
-          <Text style={styles.text2}>Daftar</Text>
-        </Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={styles.container}>
+          <View style={styles.kotak}>
+            <Text style={styles.text}>LOGIN</Text>
+            <Text style={styles.text1}>
+              Sudah Punya Akun?
+              <Text style={styles.text2}> Daftar</Text>
+            </Text>
 
-        {/* Input Email */}
-        <Text style={styles.email}>Email</Text>
-        <TextInput
-          style={styles.kotakE}
-          placeholder="email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+            />
 
-        {/* Input Password */}
-        <Text style={styles.password}>Password</Text>
-        <TextInput
-          style={styles.kotakE}
-          placeholder="password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
 
-        <View style={styles.forget}>
-          <TouchableOpacity
-            style={styles.checkboxContainer}
-            onPress={() => setRememberMe(!rememberMe)}
-          >
-            <View style={styles.checkbox}>
-              {rememberMe && <Text style={styles.checkboxCheck}>✓</Text>}
+            <View style={styles.forget}>
+              <TouchableOpacity
+                style={[
+                  styles.cekbot,
+                  { backgroundColor: isChecked ? "red" : "white" }, // Ubah warna jika dicentang
+                ]}
+                onPress={() => setIsChecked(!isChecked)} // Toggle checkbox
+              />
+              <Text style={styles.cekbot2}>Ingat Aku</Text>
+              <Text style={styles.cekbot3}>Lupa Password</Text>
             </View>
-            <Text style={styles.cekbot2}>Ingat Aku</Text>
-          </TouchableOpacity>
-          <Text style={styles.cekbot3}>Lupa Password</Text>
-        </View>
-        <TouchableOpacity style={styles.masuk} onPress={handleLoginPress}>
-          <Text style={styles.masuk2}>MASUK</Text>
-        </TouchableOpacity>
-      </View>
-
-
-
-      {/* Modal Pop-Up LOGIN BERHASIL */}
-      <Modal
-        transparent={true}
-        animationType="fade"
-        visible={isModalVisible}
-        onRequestClose={() => setIsModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Image source={require("../assets/images/berhasil.gif")} style={styles.icon} />
-            <Text style={styles.modalText}>LOGIN BERHASIL</Text>
+            <TouchableOpacity style={styles.masuk} onPress={handleLoginPress}>
+              <Text style={styles.masuk2}>MASUK</Text>
+            </TouchableOpacity>
           </View>
-        </View>
-      </Modal>
 
-    </View>
+          <Modal
+            transparent={true}
+            animationType="fade"
+            visible={isModalVisible}
+            onRequestClose={() => setIsModalVisible(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <LottieView
+                  source={require("../assets/animations/Animation.json")}
+                  autoPlay
+                  loop={false}
+                  style={styles.lottie}
+                />
+                <Text style={styles.modalText}>LOGIN BERHASIL</Text>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -119,102 +135,76 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "white",
-    transform: [{ translateY: -60 }],
-    fontSize: 20,
+    fontSize: width * 0.05,
+    marginBottom: height * 0.02,
   },
   text1: {
     color: "white",
-    transform: [{ translateY: -60 }],
-    fontSize: 10,
-    marginLeft: 5,
+    fontSize: width * 0.035,
+    marginBottom: height * 0.03,
   },
   text2: {
     color: "red",
-    fontSize: 10,
-    margin: 5,
+    fontSize: width * 0.035,
   },
-  email: {
+  label: {
     color: "white",
-    transform: [{ translateX: -95 }],
-    marginBottom: 8,
-  },
-  password: {
-    color: "white",
-    transform: [{ translateX: -85 }],
-    marginBottom: 8,
+    alignSelf: "flex-start",
+    marginBottom: height * 0.01,
+    fontSize: width * 0.04,
   },
   kotak: {
-    width: "80%",
-    height: "75%",
+    width: width * 0.8,
     backgroundColor: "#0b1957",
     borderRadius: 20,
-    justifyContent: "center",
-    alignContent: "center",
+    paddingVertical: height * 0.05,
+    paddingHorizontal: width * 0.05,
     alignItems: "center",
-    position: "relative",
   },
-  kotakE: {
-    width: "85%",
-    height: 50,
+  input: {
+    width: width * 0.7,
+    height: height * 0.06,
     backgroundColor: "white",
     borderRadius: 20,
-    marginBottom: 10,
-    paddingLeft: 10,
+    marginBottom: height * 0.02,
+    paddingHorizontal: width * 0.03,
   },
   masuk: {
-    width: "85%",
-    height: 50,
+    width: width * 0.7,
+    height: height * 0.06,
     backgroundColor: "white",
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-  },
-  forget: {
-    flexDirection: "row",
-    marginBottom: 10,
-  },
-  cekbot: {
-    width: 10,
-    height: 10,
-    backgroundColor: "white",
-    margin: 5,
-    left: -20,
-  },
-  cekbot2: {
-    color: "white",
-    left: -20,
-  },
-  cekbot3: {
-    color: "white",
-    right: -20,
-  },
-  checkboxContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 20,
-    left: -25,
-    borderWidth: 1,
-    borderColor: "white",
-    backgroundColor: "transparent",
-  },
-  checkboxChecked: {
-    backgroundColor: "white",
-  },
-  checkboxCheck: {
-    color: "white",
-    fontWeight: "bold",
-    transform: [{ translateX: 5 }]
+    marginTop: height * 0.02,
   },
   masuk2: {
     color: "#0b1957",
+    fontSize: width * 0.04,
   },
-
-  // Style untuk Modal Pop-Up
+  forget: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: height * 0.01,
+    marginBottom: height * 0.03,
+  },
+  cekbot: {
+    width: width * 0.04,
+    height: width * 0.04,
+    borderWidth: 1,
+    borderColor: "#0b1957",
+    borderRadius: 20,
+    marginRight: width * 0.02,
+  },
+  cekbot2: {
+    color: "white",
+    fontSize: width * 0.035,
+  },
+  cekbot3: {
+    color: "white",
+    marginLeft: 20,
+    fontSize: width * 0.035,
+  },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -222,22 +212,26 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    width: 250,
-    height: 250,
+    width: width * 0.6,
+    height: width * 0.6,
     backgroundColor: "white",
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: width * 0.05,
   },
   icon: {
-    width: 200,
-    height: 180,
-    marginBottom: 15,
+    width: width * 0.5,
+    height: width * 0.4,
+    marginBottom: width * 0.05,
+  },
+  lottie: {
+    width: '100%',
+    height: '100%',
   },
   modalText: {
-    fontSize: 18,
+    fontSize: width * 0.05,
     fontWeight: "bold",
-    color: "#0b1957", // Warna biru
+    color: "#0b1957",
   },
 });
